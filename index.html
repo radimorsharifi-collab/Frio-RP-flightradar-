@@ -110,6 +110,9 @@
     </div>
     <button class="btn btn-danger" id="btn-set-game-date">⏱️ Установить дату</button>
     <div style="border-top:1px solid #442222; margin:4px 0;"></div>
+    <label class="field-label" style="margin-bottom:0;">Пароль для игроков:</label>
+    <input type="text" id="admin-player-pass" class="input-field" style="width:100%;" placeholder="например FrioRP69sas">
+    <button class="btn btn-danger" id="btn-set-player-pass">🔑 Установить пароль игроков</button>
     <div style="border-top:1px solid #442222; margin:4px 0;"></div>
     <button class="btn btn-danger" id="btn-show-nicks">📋 Список ников игроков</button>
     <div id="nicks-list" style="display:none; max-height:150px; overflow-y:auto; font-size:0.85rem; background:#000; padding:6px; border-radius:4px;"></div>
@@ -179,7 +182,7 @@
     const db = firebase.database();
 
     // Пароль для входа админа (поменяй на свой!)
-    const ADMIN_PASSWORD = "admin123";
+    const ADMIN_PASSWORD = "Frio619482tt";
 
     // ===================================================================
     // СИСТЕМА ВХОДА (ИГРОК / АДМИН)
@@ -486,6 +489,20 @@
         el.innerHTML = rows.length ? rows.join('<br>') : 'Пока никто не входил.';
         el.style.display = 'block';
       });
+    });
+    document.getElementById('btn-set-player-pass').addEventListener('click', () => {
+      if (!isAdmin) return;
+      const newPass = document.getElementById('admin-player-pass').value.trim();
+      if (!newPass) { alert('Введите пароль.'); return; }
+      if (newPass === ADMIN_PASSWORD) { alert('Этот пароль совпадает с админским — выберите другой.'); return; }
+      if (confirm(`Установить новый пароль игроков: "${newPass}"? Старые пароли игроков перестанут работать.`)) {
+        db.ref('allowedPasswords').remove().then(() => {
+          db.ref('allowedPasswords/' + newPass).set(true).then(() => {
+            alert('Пароль игроков обновлён: ' + newPass);
+            document.getElementById('admin-player-pass').value = '';
+          }).catch(err => alert('Ошибка записи: ' + err.message));
+        }).catch(err => alert('Ошибка удаления старых паролей: ' + err.message));
+      }
     });
     document.getElementById('btn-set-game-date').addEventListener('click', () => {
       if (!isAdmin) return;
